@@ -11,6 +11,8 @@ const initializeAPI = (app) => {
   // default REST api endpoint
   app.get("/api/hello", hello);
   app.get("/api/users", users);
+  app.post("/api/register", register);
+  app.post("/api/login", login);
 };
 
 /**
