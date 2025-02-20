@@ -1,55 +1,42 @@
+// app.js
+
 const express = require("express");
 const http = require("http");
-var livereload = require("livereload");
-var connectLiveReload = require("connect-livereload");
-const { initializeWebsocketServer } = require("./server/websocketserver");
+const bodyParser = require("body-parser");
 const { initializeAPI } = require("./server/api");
+const { initializeWebsocketServer } = require("./server/websocketserver");
 const {
   initializeMariaDB,
   initializeDBSchema,
   executeSQL,
 } = require("./server/database");
 
-// Create the express server
 const app = express();
 const server = http.createServer(app);
 
-// create a livereload server
-// ONLY FOR DEVELOPMENT important to remove in production
-// by set the NODE_ENV to production
-const env = process.env.NODE_ENV || "development";
-if (env !== "production") {
-  const liveReloadServer = livereload.createServer();
-  liveReloadServer.server.once("connection", () => {
-    setTimeout(() => {
-      liveReloadServer.refresh("/");
-    }, 100);
-  });
-  // use livereload middleware
-  app.use(connectLiveReload());
-}
+app.use(bodyParser.json());
 
-// deliver static files from the client folder like css, js, images
 app.use(express.static("client"));
-// route for the homepage
+
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/client/index.html");
 });
-// Initialize the websocket server
+
 initializeWebsocketServer(server);
-// Initialize the REST api
+
 initializeAPI(app);
 
-// Allowing top-level await
 (async function () {
-  // Initialize the database
-  initializeMariaDB();
-  await initializeDBSchema();
-  //start the web server
-  const serverPort = process.env.PORT || 3000;
-  server.listen(serverPort, () => {
-    console.log(
-      `Express Server started on port ${serverPort} as '${env}' Environment`
-    );
-  });
+  try {
+    initializeMariaDB();
+    await initializeDBSchema();
+
+    // Starte den Server
+    const serverPort = process.env.PORT || 3000;
+    server.listen(serverPort, () => {
+      console.log(`Server läuft auf Port ${serverPort}`);
+    });
+  } catch (error) {
+    console.error("Fehler beim Initialisieren der Datenbank oder beim Starten des Servers:", error);
+  }
 })();

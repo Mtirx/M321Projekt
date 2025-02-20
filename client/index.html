@@ -4,31 +4,49 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Disborb - Chat</title>
+    <title>Disborb - Login</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/style.css" />
-    <script src="/script.js" defer></script>
   </head>
   <body class="w-screen h-screen bg-gray-900 text-gray-300 flex justify-center items-center">
-    <div class="flex flex-col items-center gap-6 p-8 bg-gray-800 rounded-xl shadow-lg w-[70%] md:w-[50%] lg:w-[40%] xl:w-[30%]">
-      <h1 class="font-semibold text-3xl text-indigo-400">Disborb - Only for Gooner</h1>
+    <div class="flex flex-col items-center gap-6 p-8 bg-gray-800 rounded-xl shadow-lg w-[80%] md:w-[40%] lg:w-[30%] xl:w-[25%]">
+      <h1 class="font-semibold text-3xl text-indigo-400">Disborb - Login</h1>
 
-      <div id="messages" class="flex flex-col gap-8 max-h-96 overflow-auto w-full p-6 bg-gray-700 border border-gray-600 rounded-lg">
-      </div>
+      <form id="loginForm" class="w-full space-y-4">
+        <div>
+          <label for="username" class="block text-lg text-gray-300">Username</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            class="w-full p-4 border border-gray-600 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="Enter your username"
+            required
+          />
+        </div>
 
-      <div class="flex items-center gap-4 w-full mt-6">
-        <input
-          id="messageInput"
-          type="text"
-          placeholder="Type a message..."
-          class="flex-1 p-4 border border-gray-600 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-lg"
-        />
+        <div>
+          <label for="password" class="block text-lg text-gray-300">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            class="w-full p-4 border border-gray-600 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="Enter your password"
+            required
+          />
+        </div>
+
         <button
-          id="btnSendMessage"
-          class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition duration-200 text-lg"
+          type="submit"
+          class="w-full bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition duration-200"
         >
-          Send
+          Login
         </button>
+      </form>
+
+      <div class="mt-4 text-sm text-gray-400">
+        Don't have an account? <a href="register.html" class="text-indigo-400 hover:underline">Sign up here</a>
       </div>
     </div>
   </body>

@@ -1,50 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
   <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Disborb - Register</title>
+    <title>Disborb - Registrierung</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/style.css" />
   </head>
   <body class="w-screen h-screen bg-gray-900 text-gray-300 flex justify-center items-center">
     <div class="flex flex-col items-center gap-6 p-8 bg-gray-800 rounded-xl shadow-lg w-[80%] md:w-[40%] lg:w-[30%] xl:w-[25%]">
-      <h1 class="font-semibold text-3xl text-indigo-400">Disborb - Register</h1>
+      <h1 class="font-semibold text-3xl text-indigo-400">Disborb - Registrierung</h1>
 
       <form id="registrationForm" class="w-full space-y-4">
         <div>
-          <label for="username" class="block text-lg text-gray-300">Username</label>
+          <label for="username" class="block text-lg text-gray-300">Benutzername</label>
           <input
             type="text"
             id="username"
             name="username"
             class="w-full p-4 border border-gray-600 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="Enter your username"
+            placeholder="Benutzernamen eingeben"
             required
           />
         </div>
 
         <div>
-          <label for="password" class="block text-lg text-gray-300">Password</label>
+          <label for="password" class="block text-lg text-gray-300">Passwort</label>
           <input
             type="password"
             id="password"
             name="password"
             class="w-full p-4 border border-gray-600 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="Enter your password"
+            placeholder="Passwort eingeben"
             required
           />
         </div>
 
         <div>
-          <label for="confirmPassword" class="block text-lg text-gray-300">Confirm Password</label>
+          <label for="confirmPassword" class="block text-lg text-gray-300">Passwort bestätigen</label>
           <input
             type="password"
             id="confirmPassword"
             name="confirmPassword"
             class="w-full p-4 border border-gray-600 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="Confirm your password"
+            placeholder="Passwort bestätigen"
             required
           />
         </div>
@@ -53,13 +53,40 @@
           type="submit"
           class="w-full bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition duration-200"
         >
-          Register
+          Registrieren
         </button>
       </form>
 
       <div class="mt-4 text-sm text-gray-400">
-        Already have an account? <a href="login.html" class="text-indigo-400 hover:underline">Login here</a>
+        Hast du schon ein Konto? <a href="index.html" class="text-indigo-400 hover:underline">Hier einloggen</a>
       </div>
     </div>
+
+    <script>
+      document.getElementById("registrationForm").addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+        const confirmPassword = document.getElementById("confirmPassword").value;
+
+        const response = await fetch("/api/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ username, password, confirmPassword }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert("Registrierung erfolgreich!");
+          window.location.href = "/index.html";  // Weiterleitung zur Login-Seite
+        } else {
+          alert(`Fehler: ${data.error}`);
+        }
+      });
+    </script>
   </body>
 </html>

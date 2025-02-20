@@ -1,18 +1,10 @@
+// database.js
+
 let pool = null;
 
 /**
- * Initializes the MariaDB connection pool.
- * The connection pool is used to execute SQL queries.
- * The connection pool is created with the following parameters:
- * - database: The name of the database to connect to. (process.env.DB_NAME)
- * - host: The host of the database. (process.env.DB_HOST)
- * - user: The user to connect to the database. (process.env.DB_USER)
- * - password: The password to connect to the database. (process.env.DB_PASSWORD)
- * - connectionLimit: The maximum number of connections in the pool. (5)
- * @example
- * initializeMariaDB();
+ * Initialisiert die MariaDB-Verbindungspool.
  * @returns {void}
- * @see {@link https://mariadb.com/kb/en/mariadb-connector-nodejs-pooling/}
  */
 const initializeMariaDB = () => {
   const mariadb = require("mariadb");
@@ -26,14 +18,10 @@ const initializeMariaDB = () => {
 };
 
 /**
- * Allows the execution of SQL queries.
- * @example
- * // Insert statement with a parameter. Can be multiple in an array format like ["Patrick", 1]
- * executeSQL("INSERT INTO users value (?)", ["Patrick"]);
- * @example
- * // Select statement without parameters.
- * executeSQL("SELECT * FROM users;");
- * @returns {Array} Returns the result of the query.
+ * Führt SQL-Abfragen aus.
+ * @param {string} query - Die SQL-Abfrage.
+ * @param {Array} params - Die Parameter für die Abfrage.
+ * @returns {Array} - Das Ergebnis der Abfrage.
  */
 const executeSQL = async (query, params) => {
   let conn;
@@ -49,9 +37,8 @@ const executeSQL = async (query, params) => {
 };
 
 /**
- * Initializes the database schema.
- * Creates the tables if they do not exist.
- * Useful for the first time setup.
+ * Initialisiert das DB-Schema und erstellt die Tabellen, falls sie nicht existieren.
+ * @returns {void}
  */
 const initializeDBSchema = async () => {
   const userTableQuery = `CREATE TABLE IF NOT EXISTS users (
@@ -61,6 +48,7 @@ const initializeDBSchema = async () => {
     PRIMARY KEY (id)
   );`;
   await executeSQL(userTableQuery);
+  
   const messageTableQuery = `CREATE TABLE IF NOT EXISTS messages (
     id INT NOT NULL AUTO_INCREMENT,
     user_id INT NOT NULL,
@@ -71,4 +59,5 @@ const initializeDBSchema = async () => {
   await executeSQL(messageTableQuery);
 };
 
-module.exports = { executeSQL, initializeMariaDB, initializeDBSchema };
+// Exporte alle Funktionen
+module.exports = { initializeMariaDB, executeSQL, initializeDBSchema };
