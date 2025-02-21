@@ -13,6 +13,7 @@ socket.addEventListener("open", (event) => {
 document.addEventListener("DOMContentLoaded", () => {
   const btnSendMessage = document.getElementById("btnSendMessage");
   const messageInput = document.getElementById("messageInput");
+  const btnLogout = document.getElementById("btnLogout");
 
   btnSendMessage.addEventListener("click", () => {
     const text = messageInput.value.trim();
@@ -32,6 +33,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (event.key === "Enter") {
       btnSendMessage.click();
     }
+  });
+
+  // Logout-Funktion
+  btnLogout.addEventListener("click", () => {
+    localStorage.removeItem("authToken"); 
+    window.location.href = "/index.html";
   });
 });
 

@@ -70,14 +70,14 @@
             body: JSON.stringify({ username, password }),
           });
 
-          const data = await response.text();
+          const data = await response.json();
 
           if(!response.ok) {
             console.log(data)
             alert(data);
         
           } else {
-          localStorage.setItem('authToken', data.token);
+          localStorage.setItem("authToken", data.token);
             window.location.href = '/chatseite.html';
           }
         

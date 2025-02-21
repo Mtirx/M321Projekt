@@ -7,31 +7,24 @@ const SECRET_KEY = process.env.SECRET_KEY;
 /**
  * Initialisiert die API-Endpunkte.
  * @param {Object} app - Das Express-App-Objekt.
- * @returns {void}
  */
 const initializeAPI = (app) => {
-  // Definiert API-Endpunkte
   app.get("/api/hello", hello);
   app.get("/api/users", users);
   app.post("/api/register", register);
   app.post("/api/login", login);
+  app.post("/api/logout", logout);
 };
 
 /**
  * Einfache "Hello World"-Antwort.
- * @param {Object} req - Die Anfrage.
- * @param {Object} res - Die Antwort.
- * @returns {void}
  */
 const hello = (req, res) => {
   res.send("Hello World!");
 };
 
 /**
- * Beispiel für Benutzer, die eine Datenbankabfrage durchführen.
- * @param {Object} req - Die Anfrage.
- * @param {Object} res - Die Antwort.
- * @returns {void}
+ * Beispiel für Benutzerabfrage.
  */
 const users = async (req, res) => {
   await executeSQL("INSERT INTO users (name) VALUES ('John Doe');");
@@ -41,9 +34,6 @@ const users = async (req, res) => {
 
 /**
  * Registrierung eines neuen Benutzers.
- * @param {Object} req - Die Anfrage.
- * @param {Object} res - Die Antwort.
- * @returns {void}
  */
 const register = async (req, res) => {
   const { username, password, confirmPassword } = req.body;
@@ -56,14 +46,12 @@ const register = async (req, res) => {
     return res.status(400).json({ error: "Die Passwörter stimmen nicht überein." });
   }
 
-  // Überprüfen, ob der Benutzername bereits existiert
   const existingUser = await executeSQL("SELECT * FROM users WHERE name = ?;", [username]);
   if (existingUser.length > 0) {
     return res.status(400).json({ error: "Benutzername bereits vergeben." });
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
-
   await executeSQL("INSERT INTO users (name, password) VALUES (?, ?);", [username, hashedPassword]);
 
   res.status(201).json({ message: "Benutzer erfolgreich registriert!" });
@@ -71,18 +59,14 @@ const register = async (req, res) => {
 
 /**
  * Login eines Benutzers.
- * @param {Object} req - Die Anfrage.
- * @param {Object} res - Die Antwort.
- * @returns {void}
  */
 const login = async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {
-    return res.status(400).json({ error: "Username und Passwort müssen vorhanden sein"})
+    return res.status(400).json({ error: "Username und Passwort müssen vorhanden sein" });
   }
   try {
     const user = await executeSQL("SELECT * FROM users WHERE name = ?", [username]);
-
     if (user.length === 0) {
       return res.status(401).send("Benutzername oder Passwort falsch.");
     }
@@ -98,6 +82,10 @@ const login = async (req, res) => {
     console.log(error);
     return res.sendStatus(500);
   }
-}
+};
+
+const logout = (req, res) => {
+  res.json({ message: "Erfolgreich ausgeloggt" });
+};
 
 module.exports = { initializeAPI };
