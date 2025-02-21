@@ -1,5 +1,3 @@
-// database.js
-
 let pool = null;
 
 /**

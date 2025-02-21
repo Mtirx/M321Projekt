@@ -49,5 +49,39 @@
         Don't have an account? <a href="register.html" class="text-indigo-400 hover:underline">Sign up here</a>
       </div>
     </div>
+
+    <script>
+      document.getElementById('loginForm').addEventListener('submit', async function(event) {
+        event.preventDefault(); // Verhindert das Standardformular-Absenden
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        if(!username || !password) {
+            alert('Bitte fülle alle Felder aus');
+          }
+
+       
+          const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username, password }),
+          });
+
+          const data = await response.text();
+
+          if(!response.ok) {
+            console.log(data)
+            alert(data);
+        
+          } else {
+          localStorage.setItem('authToken', data.token);
+            window.location.href = '/chatseite.html';
+          }
+        
+      });
+    </script>
   </body>
 </html>

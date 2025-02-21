@@ -1,5 +1,3 @@
-// app.js
-
 const express = require("express");
 const http = require("http");
 const bodyParser = require("body-parser");
@@ -14,6 +12,7 @@ const {
 const app = express();
 const server = http.createServer(app);
 
+app.use(express.json());
 app.use(bodyParser.json());
 
 app.use(express.static("client"));

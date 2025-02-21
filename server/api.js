@@ -1,6 +1,8 @@
-// api.js
-
 const { executeSQL } = require("./database");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
+const SECRET_KEY = process.env.SECRET_KEY;
 
 /**
  * Initialisiert die API-Endpunkte.
@@ -60,23 +62,42 @@ const register = async (req, res) => {
     return res.status(400).json({ error: "Benutzername bereits vergeben." });
   }
 
-  const bcrypt = require("bcrypt");
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  // Benutzer in der Datenbank speichern
   await executeSQL("INSERT INTO users (name, password) VALUES (?, ?);", [username, hashedPassword]);
 
-  // Erfolgsantwort
   res.status(201).json({ message: "Benutzer erfolgreich registriert!" });
 };
 
 /**
+ * Login eines Benutzers.
  * @param {Object} req - Die Anfrage.
  * @param {Object} res - Die Antwort.
  * @returns {void}
  */
-const login = (req, res) => {
-  res.send("Login funktioniert!");
-};
+const login = async (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ error: "Username und Passwort müssen vorhanden sein"})
+  }
+  try {
+    const user = await executeSQL("SELECT * FROM users WHERE name = ?", [username]);
+
+    if (user.length === 0) {
+      return res.status(401).send("Benutzername oder Passwort falsch.");
+    }
+
+    const match = await bcrypt.compare(password, user[0].password);
+    if (!match) {
+      return res.status(401).send("Benutzername oder Passwort falsch.");
+    }
+
+    const token = jwt.sign({ userId: user[0].id, username: user[0].name }, SECRET_KEY, { expiresIn: "1h" });
+    res.json({ token });
+  } catch (error) {
+    console.log(error);
+    return res.sendStatus(500);
+  }
+}
 
 module.exports = { initializeAPI };
