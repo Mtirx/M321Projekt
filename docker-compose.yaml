@@ -12,7 +12,21 @@ services:
       - MYSQL_PASSWORD=mychatpassword
     ports:
       - 3306:3306
-
+  app:
+    image: mtirx/disborb:latest
+    depends_on:
+      - mariadb
+    restart: always
+    environment:
+      - DB_HOST=mariadb
+      - DB_PORT=3306
+      - DB_DATABASE=mychat
+      - DB_USERNAME=mychat
+      - DB_PASSWORD=mychatpassword
+      - SECRET_KEY=I_AM_A_SECRET_KEY
+      - OPENAI_API_KEY=YOUR_OPENAI_API_KEY
+    ports:
+      - 3000:3000
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     depends_on:
