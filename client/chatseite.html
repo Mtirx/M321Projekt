@@ -13,8 +13,24 @@
     <span id="usernameDisplay" class="text-xl sm:text-2xl md:text-3xl font-bold text-white bg-indigo-500 p-3 rounded-lg absolute top-4 left-4 z-10">
     </span>
 
-    <div class="flex flex-col items-center gap-6 p-8 bg-gray-800 rounded-xl shadow-lg w-[80%] md:w-[60%] lg:w-[50%] xl:w-[40%]">
+    <div class="absolute top-24 left-4">
+      <input
+        id="newUsernameInput"
+        type="text"
+        placeholder="Neuer Benutzername"
+        class="p-3 border border-gray-600 bg-gray-700 text-white rounded-lg text-lg"
+      />
+      <div class="mt-2">
+        <button
+          id="btnChangeUsername"
+          class="text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition duration-200"
+        >
+          Benutzername ändern
+        </button>
+      </div>
+    </div>
 
+    <div class="flex flex-col items-center gap-6 p-8 bg-gray-800 rounded-xl shadow-lg w-[80%] md:w-[60%] lg:w-[50%] xl:w-[40%]">
       <div class="flex justify-between items-center w-full">
         <h1 class="font-semibold text-3xl text-indigo-400">Disborb - Only for Gooner</h1>
 
@@ -40,7 +56,6 @@
           Send
         </button>
       </div>
-      
     </div>
   </body>
 </html>

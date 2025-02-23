@@ -6,21 +6,14 @@ const SECRET_KEY = process.env.SECRET_KEY;
 
 /**
  * Initialisiert die API-Endpunkte.
- * @param {Object} app - Das Express-App-Objekt.
+ * @param {Object} app
  */
 const initializeAPI = (app) => {
-  app.get("/api/hello", hello);
   app.get("/api/users", users);
   app.post("/api/register", register);
   app.post("/api/login", login);
   app.post("/api/logout", logout);
-};
-
-/**
- * Einfache "Hello World"-Antwort.
- */
-const hello = (req, res) => {
-  res.send("Hello World!");
+  app.put("/api/users/:userId/updateUsername", updateUsername);
 };
 
 /**
@@ -86,6 +79,33 @@ const login = async (req, res) => {
 
 const logout = (req, res) => {
   res.json({ message: "Erfolgreich ausgeloggt" });
+};
+
+/**
+ * Benutzername aktualisieren
+ */
+const updateUsername = async (req, res) => {
+  const { userId, newUsername } = req.body;
+
+  if (!userId || !newUsername) {
+    return res.status(400).json({ error: "Fehlende Parameter." });
+  }
+
+  const existingUser = await executeSQL("SELECT * FROM users WHERE name = ?;", [newUsername]);
+  if (existingUser.length > 0) {
+    return res.status(400).json({ error: "Benutzername bereits vergeben." });
+  }
+
+  const result = await executeSQL("UPDATE users SET name = ? WHERE id = ?;", [newUsername, userId]);
+  
+  if (result.affectedRows === 0) {
+    return res.status(404).json({ error: "Benutzer nicht gefunden." });
+  }
+
+  // Neues Token erstellen
+  const newToken = jwt.sign({ userId, username: newUsername }, SECRET_KEY, { expiresIn: "1h" });
+
+  res.json({ message: "Benutzername erfolgreich aktualisiert.", token: newToken });
 };
 
 module.exports = { initializeAPI };

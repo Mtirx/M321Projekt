@@ -38,7 +38,7 @@ const onMessage = (ws, messageBuffer) => {
   const messageString = messageBuffer.toString();
   const message = JSON.parse(messageString);
   console.log("Received message: " + messageString);
-  // The message type is checked and the appropriate action is taken
+
   switch (message.type) {
     case "user": {
       clients.push({ ws, user: message.user });
@@ -55,6 +55,23 @@ const onMessage = (ws, messageBuffer) => {
     case "message": {
       clients.forEach((client) => {
         client.ws.send(messageString);
+      });
+      break;
+    }
+    case "updateUsername": {
+      const { userId, newUsername } = message;
+      clients.forEach((client) => {
+        if (client.user.id === userId) {
+          client.user.name = newUsername; //usernaem local akutualisieren
+        }
+      });
+
+      const usersMessage = {
+        type: "users",
+        users: clients.map((client) => client.user),
+      };
+      clients.forEach((client) => {
+        client.ws.send(JSON.stringify(usersMessage));
       });
       break;
     }
