@@ -2,12 +2,25 @@ const socket = new WebSocket("ws://localhost:3000");
 
 socket.addEventListener("open", (event) => {
   console.log("WebSocket verbunden.");
-  const user = { id: 1, name: "John Doe" };
-  const message = {
-    type: "user",
-    user,
-  };
-  socket.send(JSON.stringify(message));
+  
+  // Token und benutzername damit extrahieren
+  const token = localStorage.getItem("authToken");
+  if (token) {
+    const decoded = JSON.parse(atob(token.split('.')[1]));
+    const username = decoded.username;
+    
+    // Benutzernamens im Header setzen
+    document.getElementById('usernameDisplay').innerText = username;
+    
+    const user = { id: decoded.userId, name: username };
+    const message = {
+      type: "user",
+      user,
+    };
+    socket.send(JSON.stringify(message));
+  } else {
+    window.location.href = "/index.html";
+  }
 });
 
 document.addEventListener("DOMContentLoaded", () => {
