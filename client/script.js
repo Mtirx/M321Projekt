@@ -35,11 +35,20 @@ document.addEventListener("DOMContentLoaded", () => {
   btnSendMessage.addEventListener("click", () => {
     const text = messageInput.value.trim();
     if (text) {
-      const message = {
+      let message
+      if (text.includes("Hey ChatGPT")) {
+        console.log("ChatGPT angesprochen");
+        message = {
+          type: "ai_message",
+          text: text,
+          username: usernameDisplay.innerText,  // Absendername hinzufügen
+        };
+      } else {
+      message = {
         type: "message",
         text: text,
         username: usernameDisplay.innerText,  // Absendername hinzufügen
-      };
+      }};
       socket.send(JSON.stringify(message));
       messageInput.value = "";
     }
@@ -74,20 +83,20 @@ document.addEventListener("DOMContentLoaded", () => {
           },
           body: JSON.stringify({ userId, newUsername }),
         })
-        .then(response => response.json())
-        .then(data => {
-          if (data.message === "Benutzername erfolgreich aktualisiert.") {
-            usernameDisplay.innerText = newUsername;
-            localStorage.setItem("authToken", data.token);
-            newUsernameInput.value = "";
-          } else {
-            alert(data.error || "Fehler beim Ändern des Benutzernamens.");
-          }
-        })
-        .catch(error => {
-          console.error("Fehler bei der Benutzeraktualisierung:", error);
-          alert("Es gab ein Problem beim Ändern des Benutzernamens.");
-        });
+          .then(response => response.json())
+          .then(data => {
+            if (data.message === "Benutzername erfolgreich aktualisiert.") {
+              usernameDisplay.innerText = newUsername;
+              localStorage.setItem("authToken", data.token);
+              newUsernameInput.value = "";
+            } else {
+              alert(data.error || "Fehler beim Ändern des Benutzernamens.");
+            }
+          })
+          .catch(error => {
+            console.error("Fehler bei der Benutzeraktualisierung:", error);
+            alert("Es gab ein Problem beim Ändern des Benutzernamens.");
+          });
       }
     }
   });
@@ -121,8 +130,10 @@ function displayMessage(text, username) {
   const messages = document.getElementById("messages");
   const messageElement = document.createElement("div");
   messageElement.classList.add("message", "text-white", "bg-gray-600", "p-3", "rounded-lg");
-  
+
   messageElement.innerHTML = `<strong>${username}</strong>: ${text}`;
   messages.appendChild(messageElement);
   messages.scrollTop = messages.scrollHeight; // Scrollt immer nach unten
 }
+
+

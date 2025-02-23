@@ -1,13 +1,12 @@
 const WebSocket = require("ws");
 const { executeSQL } = require("./database");
+const { sendMessageToChatGPT } = require("./api"); // Import der ChatGPT-Funktion
 
 const clients = [];
 
 /**
- * Initializes the websocket server.
- * @example
- * initializeWebsocketServer(server);
- * @param {Object} server - The http server object.
+ * Initialisiert den WebSocket-Server.
+ * @param {Object} server - Das HTTP-Server-Objekt.
  * @returns {void}
  */
 const initializeWebsocketServer = (server) => {
@@ -16,37 +15,31 @@ const initializeWebsocketServer = (server) => {
 };
 
 /**
- * Handles a new websocket connection.
- * @example
- * onConnection(ws);
- * @param {Object} ws - The websocket object.
+ * Verarbeitet eine neue WebSocket-Verbindung.
+ * @param {Object} ws - Das WebSocket-Objekt.
  * @returns {void}
  */
 const onConnection = (ws) => {
-  console.log("New websocket connection");
+  console.log("Neue WebSocket-Verbindung");
 
-  // Wenn ein neuer Client verbunden wird, Nachrichten aus der Datenbank abrufen
+  // Nachrichten aus der Datenbank abrufen, wenn ein neuer Client verbunden wird
   sendAllMessages(ws);
 
   ws.on("message", (message) => onMessage(ws, message));
 };
 
 /**
- * Sends all stored messages to the new client.
- * @param {Object} ws - The websocket object.
+ * Sendet alle gespeicherten Nachrichten an den neuen Client.
+ * @param {Object} ws - Das WebSocket-Objekt.
  */
 const sendAllMessages = async (ws) => {
   try {
-    // Abrufen der letzten Nachrichten aus der Datenbank
-    const result = await executeSQL("SELECT m.message, u.name FROM messages m JOIN users u ON m.user_id = u.id ORDER BY m.id DESC LIMIT 50");
-    
-    // Senden der abgerufenen Nachrichten an den neuen Client
+    const result = await executeSQL("SELECT m.message, u.name FROM messages m JOIN users u ON m.user_id = u.id ORDER BY m.id ASC LIMIT 50");
     const messages = result.map(row => ({
       text: row.message,
       username: row.name
     }));
 
-    // Nachrichtentyp "message" mit den abgerufenen Nachrichten
     messages.forEach((message) => {
       const messageObj = {
         type: "message",
@@ -61,54 +54,74 @@ const sendAllMessages = async (ws) => {
 };
 
 /**
- * Handles a new websocket message.
- * @example
- * onMessage(ws, messageBuffer);
- * @param {Object} ws - The websocket object.
- * @param {Buffer} messageBuffer - The message buffer.
+ * Verarbeitet eine WebSocket-Nachricht.
+ * @param {Object} ws - Das WebSocket-Objekt.
+ * @param {Buffer} messageBuffer - Der Nachrichtentext.
  */
 const onMessage = async (ws, messageBuffer) => {
   const messageString = messageBuffer.toString();
   const message = JSON.parse(messageString);
-  console.log("Received message: " + messageString);
+  console.log("Empfangene Nachricht: " + messageString);
 
   switch (message.type) {
     case "user": {
       clients.push({ ws, user: message.user });
-      
-      // Alle Benutzer erhalten die aktualisierte Liste der aktiven Nutzer
+
       const usersMessage = {
         type: "users",
         users: clients.map((client) => client.user),
       };
+
       clients.forEach((client) => {
         client.ws.send(JSON.stringify(usersMessage));
       });
-      
-      // Wenn der Client die Verbindung trennt, entfernen wir ihn aus der Liste
+
       ws.on("close", () => onDisconnect(ws));
       break;
     }
 
     case "message": {
-      // Nachricht in der Datenbank speichern
       const user = clients.find(client => client.ws === ws).user;
       const userId = user.id;
       const text = message.text;
 
       try {
-        // Speichern der Nachricht in der Datenbank
-        await executeSQL(
-          "INSERT INTO messages (user_id, message) VALUES (?, ?)",
-          [userId, text]
-        );
+        await executeSQL("INSERT INTO messages (user_id, message) VALUES (?, ?)", [userId, text]);
       } catch (err) {
         console.error("Fehler beim Speichern der Nachricht:", err);
       }
 
-      // Nachricht an alle Clients senden
       clients.forEach((client) => {
         client.ws.send(messageString);
+      });
+      break;
+    }
+
+    case "ai_message": {
+      const user = clients.find(client => client.ws === ws).user;
+      const userId = user.id;
+      const text = message.text;
+
+      try {
+        await executeSQL("INSERT INTO messages (user_id, message) VALUES (?, ?)", [userId, text]);
+      } catch (err) {
+        console.error("Fehler beim Speichern der Nachricht:", err);
+      }
+
+      clients.forEach((client) => {
+        client.ws.send(messageString);
+      });
+      
+      const aiResponse = await sendMessageToChatGPT(message.text);
+
+      const aiMessage = {
+        type: "message",
+        text: aiResponse,
+        username: "AI",
+      };
+
+      clients.forEach((client) => {
+        client.ws.send(JSON.stringify(aiMessage));
       });
       break;
     }
@@ -121,11 +134,11 @@ const onMessage = async (ws, messageBuffer) => {
         }
       });
 
-      // Alle Clients erhalten die aktualisierte Liste der Benutzer
       const usersMessage = {
         type: "users",
         users: clients.map((client) => client.user),
       };
+
       clients.forEach((client) => {
         client.ws.send(JSON.stringify(usersMessage));
       });
@@ -133,26 +146,21 @@ const onMessage = async (ws, messageBuffer) => {
     }
 
     default: {
-      console.log("Unknown message type: " + message.type);
+      console.log("Unbekannter Nachrichtentyp: " + message.type);
     }
   }
 };
 
 /**
- * Handles a websocket disconnect.
- * @example
- * onDisconnect(ws);
- * @param {Object} ws - The websocket object.
- * @returns {void}
+ * Verarbeitet eine WebSocket-Verbindungstrennung.
+ * @param {Object} ws - Das WebSocket-Objekt.
  */
 const onDisconnect = (ws) => {
-  // Entfernen des benutzers wenn er raus geht.
   const index = clients.findIndex((client) => client.ws === ws);
   if (index !== -1) {
     clients.splice(index, 1);
   }
 
-  // Alle Clients erhalten die aktualisierte Benutzerliste
   const usersMessage = {
     type: "users",
     users: clients.map((client) => client.user),

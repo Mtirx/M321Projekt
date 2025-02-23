@@ -1,8 +1,11 @@
 const { executeSQL } = require("./database");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const OpenAI = require("openai"); // Für API-Aufrufe an OpenAI
 require("dotenv").config();
+
 const SECRET_KEY = process.env.SECRET_KEY;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY; // Dein OpenAI API-Key
 
 /**
  * Initialisiert die API-Endpunkte.
@@ -108,4 +111,25 @@ const updateUsername = async (req, res) => {
   res.json({ message: "Benutzername erfolgreich aktualisiert.", token: newToken });
 };
 
-module.exports = { initializeAPI };
+/**
+ * Sendet eine Nachricht an ChatGPT und gibt die Antwort zurück
+ */
+const sendMessageToChatGPT = async (message) => {
+  const openai = new OpenAI({ apiKey:OPENAI_API_KEY});
+  
+  const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+          { role: "system", content: "You are a helpful assistant." },
+          {
+              role: "user",
+              content: message,
+          },
+      ],
+      store: true,
+  });
+  console.log(completion.choices[0].message);
+  return completion.choices[0].message;
+};
+
+module.exports = { initializeAPI, sendMessageToChatGPT };
