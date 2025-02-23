@@ -38,6 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const message = {
         type: "message",
         text: text,
+        username: usernameDisplay.innerText,  // Absendername hinzufügen
       };
       socket.send(JSON.stringify(message));
       messageInput.value = "";
@@ -92,20 +93,14 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-socket.addEventListener("close", (event) => {
-  console.log("WebSocket geschlossen.");
-});
-
-socket.addEventListener("error", (event) => {
-  console.error("WebSocket Fehler:", event);
-});
-
 // Neue Benutzerliste empfangen
 socket.addEventListener("message", (event) => {
   const message = JSON.parse(event.data);
 
   if (message.type === "users") {
     updateActiveUsersList(message.users);
+  } else if (message.type === "message") {
+    displayMessage(message.text, message.username);
   }
 });
 
@@ -119,4 +114,15 @@ function updateActiveUsersList(users) {
     listItem.textContent = user.name;
     activeUsersList.appendChild(listItem);
   });
+}
+
+// Nachrichten anzeigen
+function displayMessage(text, username) {
+  const messages = document.getElementById("messages");
+  const messageElement = document.createElement("div");
+  messageElement.classList.add("message", "text-white", "bg-gray-600", "p-3", "rounded-lg");
+  
+  messageElement.innerHTML = `<strong>${username}</strong>: ${text}`;
+  messages.appendChild(messageElement);
+  messages.scrollTop = messages.scrollHeight; // Scrollt immer nach unten
 }
