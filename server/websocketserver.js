@@ -26,9 +26,9 @@ const onConnection = (ws) => {
   ws.on("message", (message) => onMessage(ws, message));
 };
 
-// If a new message is received, the onMessage function is called
+
 /**
- * Handles a new message from a websocket connection.
+ * Handles a new websocket message.
  * @example
  * onMessage(ws, messageBuffer);
  * @param {Object} ws - The websocket object.
@@ -62,7 +62,7 @@ const onMessage = (ws, messageBuffer) => {
       const { userId, newUsername } = message;
       clients.forEach((client) => {
         if (client.user.id === userId) {
-          client.user.name = newUsername; //usernaem local akutualisieren
+          client.user.name = newUsername;
         }
       });
 
@@ -82,7 +82,7 @@ const onMessage = (ws, messageBuffer) => {
 };
 
 /**
- * Handles a websocket disconnect. All other clients are notified about the disconnect.
+ * Handles a websocket disconnect.
  * @example
  * onDisconnect(ws);
  * @param {Object} ws - The websocket object.

@@ -66,7 +66,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const decoded = JSON.parse(atob(token.split('.')[1]));
         const userId = decoded.userId;
 
-        // Anfrage an den API-Endpunkt senden, um den Benutzernamen zu ändern
         fetch(`/api/users/${userId}/updateUsername`, {
           method: 'PUT',
           headers: {
@@ -100,3 +99,24 @@ socket.addEventListener("close", (event) => {
 socket.addEventListener("error", (event) => {
   console.error("WebSocket Fehler:", event);
 });
+
+// Neue Benutzerliste empfangen
+socket.addEventListener("message", (event) => {
+  const message = JSON.parse(event.data);
+
+  if (message.type === "users") {
+    updateActiveUsersList(message.users);
+  }
+});
+
+// Benutzerliste aktualisieren
+function updateActiveUsersList(users) {
+  const activeUsersList = document.getElementById("activeUsersList");
+  activeUsersList.innerHTML = ''; // Leere die Liste
+
+  users.forEach((user) => {
+    const listItem = document.createElement("li");
+    listItem.textContent = user.name;
+    activeUsersList.appendChild(listItem);
+  });
+}
